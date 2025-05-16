@@ -1,2 +1,2 @@
-# superkformer
-Superpixel Transformer for RGBD Data
+# SuperKFormer
+Superpixel Transformer for RGBD Data that Uses K-Means
