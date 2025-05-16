@@ -77,6 +77,26 @@ def load_intrinsics(path):
         height = int(lines[5].split()[1])
     intrinsics = o3d.camera.PinholeCameraIntrinsic(width, height, fx, fy, cx, cy)
     return intrinsics
+
+def filter_roi(pcd, x_range=(-0.5, 0.5), y_range=(-1.0, 1.0), z_range=(0.0, 2.0)):
+    """
+    Filter the point cloud to retain points within a specified 3D bounding box (ROI).
+    Args:
+        pcd: The input point cloud.
+        x_range: Tuple specifying the min and max x-coordinates.
+        y_range: Tuple specifying the min and max y-coordinates.
+        z_range: Tuple specifying the min and max z-coordinates.
+    Returns:
+        A filtered point cloud containing only points within the ROI.
+    """
+    points = np.asarray(pcd.points)
+    mask = (
+        (points[:, 0] >= x_range[0]) & (points[:, 0] <= x_range[1]) &
+        (points[:, 1] >= y_range[0]) & (points[:, 1] <= y_range[1]) &
+        (points[:, 2] >= z_range[0]) & (points[:, 2] <= z_range[1])
+    )
+    filtered_pcd = pcd.select_by_index(np.where(mask)[0])
+    return filtered_pcd
             
 def save_point_cloud_with_attributes(pcd, intrinsic, image_name, directory='data'):
     """
@@ -182,6 +202,7 @@ def create_custom_point_cloud(image_name, directory='data', visualize=False):
         normals = np.asarray(pcd.normals)
         pcd.normals = o3d.utility.Vector3dVector(-normals)
     else:
+        filter_roi(pcd) # For GRASS data
         pcd.estimate_normals()
 
     # Visualize the point cloud
